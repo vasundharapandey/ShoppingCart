@@ -2,10 +2,11 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import HomeScreen from './screens/HomeScreen';
-import store from './store';
+import store from './store/store';
 import CartScreen from './screens/CartScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { StatusBar } from 'expo-status-bar';
 import Header from './components/Header';
 const Stack = createStackNavigator();
 
@@ -30,6 +31,8 @@ const App = () => {
           />
         </Stack.Navigator>
       </NavigationContainer>
+      <StatusBar backgroundColor='#161622'
+      style='light'/>
     </Provider>
   );
 };

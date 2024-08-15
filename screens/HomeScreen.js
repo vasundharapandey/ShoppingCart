@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Modal, Image, StyleSheet, Button, ActivityIndicator, Animated } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { setProducts, addToCart, decrementQuantity, incrementQuantity, removeFromCart } from "../CartReducer";
+import { setProducts, addToCart, decrementQuantity, incrementQuantity, removeFromCart } from "../store/CartReducer";
 import { useNavigation } from '@react-navigation/native';
-
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { StarRatingDisplay } from 'react-native-star-rating-widget';
+import ProductModal from '../components/ProductModal';
+import { SafeAreaView } from 'react-native-safe-area-context';
 const HomeScreen = () => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [loading, setLoading] = useState(true); // State to handle loading
-  const [showBanner, setShowBanner] = useState(false); // State for banner visibility
-  const bannerOpacity = useState(new Animated.Value(0))[0]; // State for banner opacity
+  const [loading, setLoading] = useState(true);
+  const [showBanner, setShowBanner] = useState(false);
+  const bannerOpacity = useState(new Animated.Value(0))[0];
 
   const dispatch = useDispatch();
   const products = useSelector(state => state.cart.products);
@@ -25,7 +28,7 @@ const HomeScreen = () => {
       } catch (error) {
         console.error(error);
       } finally {
-        setLoading(false); // Stop loading once data is fetched
+        setLoading(false);
       }
     };
 
@@ -45,7 +48,7 @@ const HomeScreen = () => {
   const handleAddToCart = (product) => {
     dispatch(addToCart(product));
     closeModal();
-    showSuccessBanner(); // Show the success banner when an item is added
+    showSuccessBanner();
   };
 
   const showSuccessBanner = () => {
@@ -63,22 +66,63 @@ const HomeScreen = () => {
         }).start(() => {
           setShowBanner(false);
         });
-      }, 2000); // Hide the banner after 2 seconds
+      }, 2000);
     });
   };
 
-  const renderProduct = ({ item }) => (
-    <TouchableOpacity onPress={() => openModal(item)}>
-      <View style={styles.productContainer}>
-        <Image source={{ uri: item.image }} style={styles.productImage} />
-        <View style={styles.productInfo}>
-          <Text style={styles.productTitle}>{item.title}</Text>
-          <Text style={styles.productPrice}>${item.price}</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+  const renderProduct = ({ item }) => {
+    const cartItem = cart.find(cartItem => cartItem.id === item.id);
 
+    return (
+      <TouchableOpacity onPress={() => openModal(item)}>
+        <View style={styles.productContainer}>
+          <Image source={{ uri: item.image }} style={styles.productImage} />
+          <View style={styles.productInfo}>
+            <Text style={styles.productTitle} numberOfLines={2} ellipsizeMode="tail">
+              {item.title}
+            </Text>
+            <View style={styles.ratingcontainer}>
+              <StarRatingDisplay
+                rating={item.rating.rate}
+                maxStars={5}
+                starSize={18}
+              />
+              <Text style={styles.ratingText}>{item.rating.count}</Text>
+            </View>
+            <View style={styles.row3}>
+              <Text style={styles.productPrice}>Rs. {item.price}</Text>
+             
+                {cartItem && (
+                  <View style={styles.actionContainer}>
+                    <TouchableOpacity onPress={() => dispatch(decrementQuantity(item.id))}>
+                      <MaterialCommunityIcons name="minus" color={'#000'} size={20} />
+                    </TouchableOpacity>
+                    <Text style={styles.quantity}>{cartItem.quantity}</Text>
+                    <TouchableOpacity onPress={() => dispatch(incrementQuantity(item.id))}>
+                      <MaterialCommunityIcons name="plus" color={'#000'} size={20} />
+                    </TouchableOpacity>
+                    </View>
+                )}
+           
+            </View>
+            <Text style={styles.category}>Category: {item.category}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  // const renderProduct = ({ item }) => (
+  //   <TouchableOpacity onPress={() => openModal(item)}>
+  //     <View style={styles.productContainer}>
+  //       <Image source={{ uri: item.image }} style={styles.productImage} />
+  //       <View style={styles.productInfo}>
+  //         <Text style={styles.productTitle}>{item.title}</Text>
+  //         <Text style={styles.productPrice}>${item.price}</Text>
+  //       </View>
+  //     </View>
+  //   </TouchableOpacity>
+  // );
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
@@ -89,6 +133,7 @@ const HomeScreen = () => {
   }
 
   return (
+    
     <View style={styles.container}>
       {showBanner && (
         <Animated.View style={[styles.banner, { opacity: bannerOpacity }]}>
@@ -101,38 +146,25 @@ const HomeScreen = () => {
         renderItem={renderProduct}
         keyExtractor={item => item.id.toString()}
       />
-
-      <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={closeModal}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            {selectedProduct && (
-              <>
-                <Image source={{ uri: selectedProduct.image }} style={styles.modalProductImage} />
-                <Text style={styles.modalTitle}>{selectedProduct.title}</Text>
-                <Text style={styles.modalPrice}>${selectedProduct.price}</Text>
-                <Text style={styles.modalDescription}>{selectedProduct.description}</Text>
-                <Button title="Add to Cart" onPress={() => handleAddToCart(selectedProduct)} />
-              </>
-            )}
-            <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <ProductModal
+        modalVisible={modalVisible}
+        closeModal={closeModal}
+        selectedProduct={selectedProduct}
+        handleAddToCart={handleAddToCart}
+      />
     </View>
+  
   );
 };
 
 const styles = StyleSheet.create({
+  superContainer:{
+flex:1
+  },
   container: {
     flex: 1,
     padding: 16,
+      backgroundColor:'#fff'
   },
   loaderContainer: {
     flex: 1,
@@ -143,20 +175,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    borderWidth: 1, // Added border width
-    borderColor: '#ccc', // Border color
-    borderRadius: 8, // Rounded corners
-    marginBottom: 10, // Space between items
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 12,
+    marginBottom: 10,
+    height: 150,
   },
   productImage: {
-    width: 50,
-    height: 70,
-    maxHeight: 80,
+    width: 90,
+    height: 120,
+    maxHeight: 130,
     resizeMode: 'contain',
     marginRight: 16,
   },
   productInfo: {
-    flex: 1,
+
+    flexDirection: 'column',
+    width: '60%',
   },
   productTitle: {
     fontSize: 18,
@@ -164,7 +199,8 @@ const styles = StyleSheet.create({
   },
   productPrice: {
     fontSize: 16,
-    color: 'green',
+    color: 'black',
+    fontWeight: 'bold',
     marginTop: 4,
   },
   banner: {
@@ -219,6 +255,38 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: 'blue',
     fontSize: 16,
+  },
+  ratingcontainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: 30,
+  },
+  star: {
+    marginRight: 5,
+  },
+  ratingText: {
+    fontSize: 16,
+    color: '#9c9c9c',
+    fontWeight:'bold'
+  },
+  category:{
+    color: '#9c9c9c',
+     fontWeight:'bold'
+  },
+  actionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent:'space-evenly',
+    backgroundColor:'lightgray',
+    width:70,
+    borderColor: 'transparent',
+    borderWidth: 1,
+    borderRadius: 8,
+  },
+  row3:{
+    flexDirection:'row',
+    justifyContent:'space-between',
+    width:200,
   },
 });
 
