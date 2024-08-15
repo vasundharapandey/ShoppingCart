@@ -49,7 +49,7 @@ const CartScreen = () => {
         </>
       )}
 
-      {/* Modal for checkout */}
+     
       <Modal
         visible={modalVisible}
         transparent={true}
