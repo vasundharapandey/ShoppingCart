@@ -1,14 +1,16 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import {setProducts, addToCart, decrementQuantity, incrementQuantity, removeFromCart } from "../CartReducer";
-
+import { decrementQuantity, incrementQuantity, removeFromCart } from '../CartReducer';
+//import Icon from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 const CartScreen = () => {
   const cart = useSelector(state => state.cart.cart);
   const dispatch = useDispatch();
 
   const renderCartItem = ({ item }) => (
     <View style={styles.cartItem}>
+      <Image source={{ uri: item.image }} style={styles.productImage} />
       <Text style={styles.cartItemTitle}>{item.title}</Text>
       <View style={styles.quantityContainer}>
         <TouchableOpacity onPress={() => dispatch(decrementQuantity(item.id))}>
@@ -20,19 +22,25 @@ const CartScreen = () => {
         </TouchableOpacity>
       </View>
       <TouchableOpacity onPress={() => dispatch(removeFromCart(item.id))}>
-        <Text style={styles.removeButton}>Remove</Text>
+      <MaterialCommunityIcons name="delete" color={'#000'} size={30} />
       </TouchableOpacity>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>My Cart</Text>
-      <FlatList
-        data={cart}
-        renderItem={renderCartItem}
-        keyExtractor={item => item.id.toString()}
-      />
+     
+      {cart.length === 0 ? (
+        <View style={styles.emptyCartContainer}>
+          <Text style={styles.emptyCartText}>Your cart is empty. Continue shopping.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={cart}
+          renderItem={renderCartItem}
+          keyExtractor={item => item.id.toString()}
+        />
+      )}
     </View>
   );
 };
@@ -46,6 +54,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
+  },
+  productImage: {
+    width: 50,
+    height: 70,
+    maxHeight: 80,
+    resizeMode: 'contain',
+    marginRight: 16,
   },
   cartItem: {
     flexDirection: 'row',
@@ -75,6 +90,15 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 16,
     marginLeft: 10,
+  },
+  emptyCartContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyCartText: {
+    fontSize: 18,
+    color: '#888',
   },
 });
 
