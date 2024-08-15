@@ -85,7 +85,8 @@ const HomeScreen = () => {
               <StarRatingDisplay
                 rating={item.rating.rate}
                 maxStars={5}
-                starSize={18}
+                starSize={20}
+                starStyle={styles.star}
               />
               <Text style={styles.ratingText}>{item.rating.count}</Text>
             </View>
@@ -195,6 +196,7 @@ flex:1
   },
   productTitle: {
     fontSize: 18,
+    marginBottom: 5,
     fontWeight: 'bold',
   },
   productPrice: {
@@ -259,19 +261,21 @@ flex:1
   ratingcontainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: 30,
-  },
+    marginBottom: 5,
+   },
   star: {
-    marginRight: 5,
+    marginRight: 1,
   },
   ratingText: {
     fontSize: 16,
     color: '#9c9c9c',
-    fontWeight:'bold'
+    fontWeight:'bold',
+    marginLeft:5
   },
   category:{
     color: '#9c9c9c',
-     fontWeight:'bold'
+     fontWeight:'bold',
+     marginTop: 3,
   },
   actionContainer: {
     flexDirection: 'row',
